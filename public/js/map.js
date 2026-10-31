@@ -147,13 +147,15 @@ function initMap() {
       api.get('/markers'),
     ]);
 
-    categories.forEach((c) => activeCategories.add(c.id));
+    // IDs als Strings: Kategorien anderer Plugins (Filter mmp_categories) haben Text-IDs.
+    categories.forEach((c) => activeCategories.add(String(c.id)));
 
     renderMarkers(allMarkers);
     renderLegend(categories);
 
     if (cfg.allowSuggestions) {
-      initSuggestionForm(categories);
+      // Nur echte Kartenkategorien zur Auswahl, keine angezeigten Termine o. Ä.
+      initSuggestionForm(categories.filter((c) => !c.virtual));
     }
   }
 
@@ -173,6 +175,25 @@ function initMap() {
       iconSize: [32, 32],
       iconAnchor: [16, 32],
       popupAnchor: [0, -34],
+    });
+  }
+
+  // Termine (type "event"): abgerundetes Quadrat mit Kalender-Symbol statt Tropfen.
+  function makeEventIcon(color, symbol) {
+    return L.divIcon({
+      className: 'mmp-leaflet-icon mmp-event-icon',
+      html: `<div style="
+        background:${color};
+        width:30px; height:30px;
+        border-radius:8px;
+        border:3px solid #fff;
+        box-shadow:0 2px 8px rgba(0,0,0,.3);
+        display:flex; align-items:center; justify-content:center;
+        font-size:15px; line-height:1;
+      ">${escHtml(symbol || '📅')}</div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -18],
     });
   }
 
@@ -204,10 +225,10 @@ function initMap() {
       clusterGroup = L.layerGroup();
     }
 
-    const visible = markerData.filter((m) => activeCategories.has(m.category_id));
+    const visible = markerData.filter((m) => activeCategories.has(String(m.category_id)));
 
     visible.forEach((m) => {
-      const icon = makeIcon(m.color);
+      const icon = m.type === 'event' ? makeEventIcon(m.color, m.icon) : makeIcon(m.color);
 
       let imagesHtml = '';
       if (m.images && m.images.length > 0) {
@@ -284,22 +305,30 @@ function initMap() {
         L.DomEvent.disableClickPropagation(div);
         L.DomEvent.disableScrollPropagation(div);
 
-        div.innerHTML = '<h4>Kategorien</h4>' +
-          cats.map((c) =>
-            `<label class="mmp-legend-item mmp-legend-active" data-cat-id="${c.id}">
-              <span class="mmp-legend-checkbox checked"
-                    style="border-color:${c.color}; background:${c.color};">
-                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-              <span>${escHtml(c.name)}</span>
-            </label>`
-          ).join('');
+        const eintrag = (c) =>
+          `<label class="mmp-legend-item mmp-legend-active" data-cat-id="${escHtml(String(c.id))}">
+            <span class="mmp-legend-checkbox checked"
+                  style="border-color:${c.color}; background:${c.color};">
+              <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>${escHtml(c.name)}</span>
+          </label>`;
+
+        // Kategorien anderer Plugins erscheinen unter ihrer eigenen Überschrift (Feld "group").
+        const gruppen = {};
+        cats.forEach((c) => {
+          const g = c.group || 'Kategorien';
+          (gruppen[g] = gruppen[g] || []).push(c);
+        });
+        div.innerHTML = Object.keys(gruppen).map((g) =>
+          `<h4>${escHtml(g)}</h4>` + gruppen[g].map(eintrag).join('')
+        ).join('');
 
         div.querySelectorAll('.mmp-legend-item').forEach((el) => {
-          const catId = parseInt(el.dataset.catId);
-          const cat   = cats.find((c) => c.id === catId);
+          const catId = el.dataset.catId;
+          const cat   = cats.find((c) => String(c.id) === catId);
           const box   = el.querySelector('.mmp-legend-checkbox');
 
           el.addEventListener('click', () => {

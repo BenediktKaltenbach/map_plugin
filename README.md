@@ -45,6 +45,41 @@ After activation the WordPress menu has:
 - Leaflet 1.9.4 and Leaflet.markercluster 1.5.3 are bundled and loaded under their own handles (`mmp-leaflet`, `mmp-leaflet-cluster`). This avoids picking up another plugin's Leaflet (e.g. Otter Blocks registers `leaflet` with version 1.8.0).
 - The front-end script avoids JavaScript features older Safari versions cannot parse (CI fails on regex lookbehind).
 
+## Extension point for other plugins
+
+Other plugins can add categories and markers to the map without creating copies as `mmp_marker` posts. DTRV-Termine uses this to show upcoming events.
+
+```php
+add_filter( 'mmp_categories', function ( array $categories ) {
+    $categories[] = array(
+        'id'      => 'termine-wettkampf', // string IDs are fine
+        'name'    => 'Wettkampf',
+        'color'   => '#006666',
+        'icon'    => '📅',
+        'group'   => 'Termine',  // own heading in the legend
+        'virtual' => true,       // not offered in the suggestion form
+    );
+    return $categories;
+} );
+
+add_filter( 'mmp_markers', function ( array $markers ) {
+    $markers[] = array(
+        'id'            => 'termin-123',
+        'title'         => 'Deutsche Meisterschaft 2027',
+        'popup_html'    => '…', // must already be escaped/safe HTML
+        'lat'           => 50.7151,
+        'lng'           => 7.1393,
+        'color'         => '#006666',
+        'icon'          => '📅',
+        'type'          => 'event', // calendar-style marker instead of a pin
+        'category_id'   => 'termine-wettkampf',
+        'category_name' => 'Wettkampf',
+        'images'        => array(),
+    );
+    return $markers;
+} );
+```
+
 ## Release process
 
 1. Test new versions on a copy of the site first.

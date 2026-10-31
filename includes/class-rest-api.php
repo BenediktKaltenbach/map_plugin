@@ -75,7 +75,14 @@ class MMP_RestAPI {
             'icon'  => get_post_meta($p->ID, 'icon', true) ?: '📍',
         ], $posts);
 
-        return new \WP_REST_Response($categories, 200);
+        /**
+         * Erweiterungspunkt: andere Plugins können eigene Kategorien ergänzen (z. B. DTRV-Termine).
+         * Zusätzliche Felder: 'id' darf ein String sein, 'virtual' => true blendet die Kategorie
+         * im Vorschlagsformular aus, 'group' gruppiert sie in der Legende.
+         */
+        $categories = apply_filters('mmp_categories', $categories);
+
+        return new \WP_REST_Response(array_values($categories), 200);
     }
 
     // ── GET /markers ──────────────────────────────────────────────────
@@ -110,7 +117,14 @@ class MMP_RestAPI {
             ];
         }, $posts);
 
-        return new \WP_REST_Response($markers, 200);
+        /**
+         * Erweiterungspunkt: andere Plugins können Marker ergänzen, ohne Kopien als mmp_marker
+         * anzulegen (z. B. DTRV-Termine mit kommenden Terminen). Felder wie oben; optional
+         * 'type' => 'event' für ein Kalender-Symbol. popup_html muss bereits sicher escaped sein.
+         */
+        $markers = apply_filters('mmp_markers', $markers);
+
+        return new \WP_REST_Response(array_values($markers), 200);
     }
 
     // ── POST /suggest ─────────────────────────────────────────────────
