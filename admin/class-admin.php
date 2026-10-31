@@ -31,10 +31,10 @@ class MMP_Admin {
 
         if (!in_array($page, $plugin_pages, true)) return;
 
-        wp_enqueue_style('leaflet',   MMP_URL . 'assets/leaflet/leaflet.css', [], '1.9.4');
-        wp_enqueue_script('leaflet',  MMP_URL . 'assets/leaflet/leaflet.js',  [], '1.9.4', true);
+        wp_enqueue_style('mmp-leaflet',  MMP_URL . 'assets/leaflet/leaflet.css', [], '1.9.4');
+        wp_enqueue_script('mmp-leaflet', MMP_URL . 'assets/leaflet/leaflet.js',  [], '1.9.4', true);
         wp_enqueue_style('mmp-admin', MMP_URL . 'admin/admin.css', [], MMP_VERSION);
-        wp_enqueue_script('mmp-admin',MMP_URL . 'admin/admin.js',  ['leaflet', 'wp-api-fetch'], MMP_VERSION, true);
+        wp_enqueue_script('mmp-admin',MMP_URL . 'admin/admin.js',  ['mmp-leaflet', 'wp-api-fetch'], MMP_VERSION, true);
 
         // WordPress Media Library für Bildauswahl
         wp_enqueue_media();
@@ -200,7 +200,9 @@ class MMP_Admin {
 
         if (isset($_POST['mmp_action']) && $_POST['mmp_action'] === 'delete_category') {
             check_admin_referer('mmp_categories_nonce');
-            wp_delete_post((int) $_POST['cat_id'], true);
+            if (get_post_type((int) $_POST['cat_id']) === 'mmp_category') {
+                wp_delete_post((int) $_POST['cat_id'], true);
+            }
             echo '<div class="notice notice-success"><p>Kategorie gelöscht.</p></div>';
         }
 

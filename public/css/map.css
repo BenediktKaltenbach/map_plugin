@@ -44,6 +44,24 @@
   display: inline !important;
 }
 
+/* Popup-Bilder: gegen die Regel oben wieder begrenzen. */
+#mmp-public-map img.mmp-popup-img {
+  width: 100% !important;
+  max-height: 160px !important;
+  object-fit: cover;
+  display: block !important;
+  border-radius: 6px !important;
+  margin: 0 0 6px !important;
+}
+
+/* Auf Handys nicht den ganzen Bildschirm füllen, sonst kommt man nicht an der Karte vorbei. */
+@media (max-width: 767px) {
+  #mmp-public-map {
+    height: min(600px, 65vh) !important;
+    height: min(600px, 65svh) !important;
+  }
+}
+
 /* Tile-Bilder explizit */
 #mmp-public-map .leaflet-tile {
   width: 256px !important;
@@ -134,6 +152,7 @@
 /* Legende */
 .leaflet-control.mmp-legend {
   background: rgba(255,255,255,.95);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   padding: 12px 16px;
   border-radius: 10px;
@@ -247,7 +266,7 @@
   padding: 8px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: max(16px, 1rem); /* unter 16px zoomt iOS beim Antippen hinein */
   width: 100%;
   box-sizing: border-box;
 }

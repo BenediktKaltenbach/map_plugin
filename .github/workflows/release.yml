@@ -1,0 +1,49 @@
+name: Release
+
+# A tag like v1.1.0 creates a GitHub release with my-map-plugin.zip (incl. vendor/).
+# WordPress picks up the update via the Plugin Update Checker.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+
+      - name: Check version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          HEADER=$(grep -m1 -E '^\s*\*\s*Version:' my-map-plugin.php | awk '{print $NF}')
+          CONSTANT=$(grep -m1 -E "define\('MMP_VERSION'" my-map-plugin.php | sed -E "s/.*'MMP_VERSION', *'([^']+)'.*/\1/")
+          echo "Tag: $TAG, header: $HEADER, constant: $CONSTANT"
+          if [ "$TAG" != "$HEADER" ] || [ "$TAG" != "$CONSTANT" ]; then
+            echo "::error::Tag v$TAG does not match the version in my-map-plugin.php ($HEADER / $CONSTANT)"
+            exit 1
+          fi
+
+      - name: PHP syntax
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Build ZIP
+        run: |
+          mkdir -p build/my-map-plugin
+          rsync -a --exclude-from=.distignore ./ build/my-map-plugin/
+          cd build && zip -qr ../my-map-plugin.zip my-map-plugin
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: my-map-plugin.zip
+          generate_release_notes: true

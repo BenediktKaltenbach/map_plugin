@@ -1,0 +1,31 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.1', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+      - name: PHP syntax
+        run: find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -l
+      - name: JavaScript syntax
+        run: for f in public/js/*.js admin/*.js; do node --check "$f"; done
+      - name: No regex lookbehind (breaks Safari before 16.4)
+        run: |
+          if grep -nE '\(\?<[=!]' public/js/*.js admin/*.js; then
+            echo "::error::Regex lookbehind found - the whole script fails to parse on older Safari/iOS."
+            exit 1
+          fi
+      - name: Install dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist

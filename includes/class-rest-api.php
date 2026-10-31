@@ -125,13 +125,15 @@ class MMP_RestAPI {
         if ($count >= 5) {
             return new \WP_Error('rate_limit', 'Zu viele Anfragen. Bitte später erneut versuchen.', ['status' => 429]);
         }
-        set_transient($rate_key, $count + 1, HOUR_IN_SECONDS);
 
         // Daten bereinigen
         $data = MMP_Sanitizer::marker_submission($request->get_json_params());
         if (is_wp_error($data)) {
             return $data;
         }
+
+        // Erst gültige Vorschläge zählen, damit Tippfehler das Kontingent nicht aufbrauchen.
+        set_transient($rate_key, $count + 1, HOUR_IN_SECONDS);
 
         // Als "pending" speichern → wartet auf Admin-Freigabe
         $post_id = wp_insert_post([
@@ -226,6 +228,9 @@ class MMP_RestAPI {
 
     public static function approve_marker(\WP_REST_Request $request): \WP_REST_Response|\WP_Error {
         $id = (int) $request->get_param('id');
+        if (get_post_type($id) !== 'mmp_marker') {
+            return new \WP_Error('not_found', 'Marker nicht gefunden.', ['status' => 404]);
+        }
 
         $result = wp_update_post(['ID' => $id, 'post_status' => 'publish']);
         if (is_wp_error($result)) {
@@ -237,8 +242,11 @@ class MMP_RestAPI {
 
     // ── DELETE /markers/{id} ──────────────────────────────────────────
 
-    public static function delete_marker(\WP_REST_Request $request): \WP_REST_Response {
+    public static function delete_marker(\WP_REST_Request $request): \WP_REST_Response|\WP_Error {
         $id = (int) $request->get_param('id');
+        if (get_post_type($id) !== 'mmp_marker') {
+            return new \WP_Error('not_found', 'Marker nicht gefunden.', ['status' => 404]);
+        }
         wp_delete_post($id, true);
 
         return new \WP_REST_Response(['success' => true], 200);

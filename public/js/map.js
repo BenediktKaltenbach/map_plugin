@@ -18,7 +18,7 @@
     return;
   }
   setTimeout(() => waitForLeaflet(retries - 1), 100);
-})(50); // max. 5 Sekunden warten
+})(150); // max. 15 Sekunden warten (langsame Mobilverbindungen)
 
 function initMap() {
 
@@ -29,15 +29,13 @@ function initMap() {
     get: (path) =>
       fetch(cfg.restBase + path).then((r) => r.json()),
 
+    // Ohne X-WP-Nonce: der Endpunkt ist öffentlich, ein abgelaufener Nonce führte zu 403.
     post: (path, body) =>
       fetch(cfg.restBase + path, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-WP-Nonce': cfg.nonce,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-      }).then((r) => r.json()),
+      }).then((r) => r.json().catch(() => ({ success: false, message: 'Server-Antwort ' + r.status }))),
   };
 
   // ─── Karte initialisieren ──────────────────────────────────────────
@@ -57,6 +55,9 @@ function initMap() {
     fadeAnimation: !isIOS,
     zoomAnimation: !isIOS,
     markerZoomAnimation: !isIOS,
+    // Mausrad/Trackpad zoomt erst nach einem Klick in die Karte – sonst bleibt man beim
+    // Scrollen der Seite in der Karte hängen (v. a. Mac-Trackpads).
+    scrollWheelZoom: false,
   }).setView(
     [cfg.centerLat, cfg.centerLng],
     cfg.defaultZoom
@@ -66,6 +67,9 @@ function initMap() {
     attribution:
       '© <a href="https://openstreetmap.org">OpenStreetMap</a>-Mitwirkende',
   }).addTo(map);
+
+  map.on('click focus', () => map.scrollWheelZoom.enable());
+  map.on('mouseout', () => map.scrollWheelZoom.disable());
 
   // Weißer-Karte-Fix: invalidateSize zu mehreren Zeitpunkten aufrufen
   // — DOMContentLoaded reicht nicht, CSS/Fonts können noch laden
@@ -224,19 +228,17 @@ function initMap() {
 
       const lm = L.marker([m.lat, m.lng], { icon }).bindPopup(popup, {
         maxWidth: 280,
+        maxHeight: 320, // lange Popups scrollen statt oben abgeschnitten zu werden
       });
 
+      // Links in neuem Tab öffnen. Kein eigener window.open-Handler mehr: der öffnete
+      // zusammen mit target=_blank zwei Tabs (Safari blockierte dann einen davon).
       lm.on('popupopen', () => {
         const popupEl = lm.getPopup().getElement();
         if (!popupEl) return;
         popupEl.querySelectorAll('a').forEach((a) => {
           a.setAttribute('target', '_blank');
           a.setAttribute('rel', 'noopener noreferrer');
-          // Alle Event-Propagation stoppen damit Leaflet den Klick nicht schluckt
-          L.DomEvent.on(a, 'click', (e) => {
-            L.DomEvent.stopPropagation(e);
-            window.open(a.href, '_blank', 'noopener,noreferrer');
-          });
         });
       });
       clusterGroup.addLayer(lm);
@@ -247,21 +249,28 @@ function initMap() {
 
   // ─── URLs in Text automatisch verlinken ──────────────────────────
 
-  function linkify(text) {
-    // HTML-Entities dekodieren die WordPress einführen kann
-    const decoded = text
-      .replace(/&amp;/g, '&')
-      .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(code));
-
-    return decoded.replace(
-      /(?<!href="|href=')(?<![">])(https?:\/\/[^\s<>"']+|www\.[a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=%-]+)/gi,
-      (url) => {
-        // Trailing punctuation abschneiden (Punkt, Komma, Klammer am Ende)
-        const clean = url.replace(/[.,;:!?)]+$/, '');
-        const href  = clean.startsWith('http') ? clean : 'https://' + clean;
-        return `<a href="${href}">${clean}</a>`;
+  // Nur Text außerhalb von HTML-Tags und außerhalb bestehender <a>…</a> wird verlinkt.
+  // Bewusst ohne Lookbehind-Regex (gibt es in Safari erst ab 16.4 – davor brach die ganze
+  // Datei mit einem Syntaxfehler ab) und ohne Entities zu dekodieren (das öffnete eine
+  // XSS-Lücke: &#60;script&#62; wurde zu <script>).
+  function linkify(html) {
+    const urlRe = /(https?:\/\/[^\s<>"']+|www\.[a-zA-Z0-9._~:/?#[\]@!$&'()*+,;=%-]+)/gi;
+    let inLink = 0;
+    return String(html || '').split(/(<[^>]*>)/).map((part) => {
+      if (part.charAt(0) === '<') {
+        if (/^<a[\s>]/i.test(part)) inLink++;
+        else if (/^<\/a>/i.test(part)) inLink = Math.max(0, inLink - 1);
+        return part;
       }
-    );
+      if (inLink) return part;
+      return part.replace(urlRe, (url) => {
+        // Satzzeichen am Ende nicht mitverlinken (Punkt, Komma, Klammer)
+        const clean = url.replace(/[.,;:!?)]+$/, '');
+        const rest  = url.slice(clean.length);
+        const href  = clean.startsWith('http') ? clean : 'https://' + clean;
+        return `<a href="${escHtml(href)}">${clean}</a>${rest}`;
+      });
+    }).join('');
   }
 
 
@@ -419,10 +428,16 @@ function initMap() {
       submitBtn.textContent = 'Wird eingereicht…';
       submitBtn.disabled = true;
 
-      const res = await api.post('/suggest', body);
-
-      submitBtn.textContent = 'Vorschlag einreichen';
-      submitBtn.disabled = false;
+      // Bei Netzabbruch (z. B. WLAN → Mobilfunk) darf der Knopf nicht gesperrt bleiben.
+      let res;
+      try {
+        res = await api.post('/suggest', body);
+      } catch (err) {
+        res = { success: false, message: 'Keine Verbindung zum Server. Bitte erneut versuchen.' };
+      } finally {
+        submitBtn.textContent = 'Vorschlag einreichen';
+        submitBtn.disabled = false;
+      }
 
       if (res.success) {
         showFeedback('✅ Danke! Dein Vorschlag wird von den Admins vor Veröffentlichung geprüft.', 'success');

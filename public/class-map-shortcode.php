@@ -16,20 +16,23 @@ class MMP_MapShortcode {
             'lng'    => get_option('mmp_center_lng', 10.447),
         ], $atts, 'my_map');
 
-        // Assets nur auf Seiten laden, die den Shortcode haben
-        wp_enqueue_style('leaflet',     MMP_URL . 'assets/leaflet/leaflet.css', [], '1.9.4');
-        wp_enqueue_style('leaflet-cluster',         MMP_URL . 'assets/leaflet/MarkerCluster.css',         [], '1.5.3');
-        wp_enqueue_style('leaflet-cluster-default', MMP_URL . 'assets/leaflet/MarkerCluster.Default.css', [], '1.5.3');
+        // Assets nur auf Seiten laden, die den Shortcode haben.
+        // Eigene Handles (mmp-…): Otter Blocks registriert bereits „leaflet“ (1.8.0, async);
+        // mit demselben Handle würde WordPress dessen Datei laden statt unserer.
+        wp_enqueue_style('mmp-leaflet',                 MMP_URL . 'assets/leaflet/leaflet.css',                [], '1.9.4');
+        wp_enqueue_style('mmp-leaflet-cluster',         MMP_URL . 'assets/leaflet/MarkerCluster.css',         ['mmp-leaflet'], '1.5.3');
+        wp_enqueue_style('mmp-leaflet-cluster-default', MMP_URL . 'assets/leaflet/MarkerCluster.Default.css', ['mmp-leaflet-cluster'], '1.5.3');
 
-        // Leaflet + MarkerCluster als ein Bundle — vermeidet Ladereihenfolge-Probleme
-        wp_enqueue_script('leaflet', MMP_URL . 'assets/leaflet/leaflet-bundle.js', [], '1.9.4', true);
+        wp_enqueue_script('mmp-leaflet',         MMP_URL . 'assets/leaflet/leaflet.js',               [], '1.9.4', true);
+        wp_enqueue_script('mmp-leaflet-cluster', MMP_URL . 'assets/leaflet/leaflet.markercluster.js', ['mmp-leaflet'], '1.5.3', true);
 
-        wp_enqueue_style('mmp-public', MMP_URL . 'public/css/map.css', [], MMP_VERSION);
-        wp_enqueue_script('mmp-public', MMP_URL . 'public/js/map.js', ['leaflet'], MMP_VERSION, true);
+        wp_enqueue_style('mmp-public', MMP_URL . 'public/css/map.css', ['mmp-leaflet'], MMP_VERSION);
+        wp_enqueue_script('mmp-public', MMP_URL . 'public/js/map.js', ['mmp-leaflet', 'mmp-leaflet-cluster'], MMP_VERSION, true);
 
+        // Kein REST-Nonce: Vorschläge sind öffentlich, und ein veralteter Nonce (iOS hält Tabs
+        // tagelang offen) würde jede Anfrage mit 403 „Cookie check failed“ scheitern lassen.
         wp_localize_script('mmp-public', 'MMP_Public', [
             'restBase'        => rest_url('my-map/v1'),
-            'nonce'           => wp_create_nonce('wp_rest'),
             'centerLat'       => floatval($atts['lat']),
             'centerLng'       => floatval($atts['lng']),
             'defaultZoom'     => intval($atts['zoom']),
