@@ -40,6 +40,7 @@ After activation the WordPress menu has:
 - All input is sanitised server-side (`sanitize_text_field()`, `wp_kses()`, `sanitize_hex_color()` …). Popup text is never entity-decoded in the browser.
 - Admin REST routes require `manage_options` and only act on this plugin's own post types.
 - Visitor suggestions are stored as `pending` and stay invisible until approved.
+- **Review by mail:** every suggestion is mailed to the address under Einstellungen › "E-Mail für neue Vorschläge" (empty: the WordPress admin email). The mail has **Freigeben** / **Ablehnen** links that work without logging in (secret token per suggestion). They open a confirmation page with a button first, so email security scanners cannot trigger them. Rejected suggestions go to the trash. After approval (by mail or in the admin), the submitter gets a thank-you mail if they left an address, and the address is then deleted.
 - Honeypot field against simple bots; at most 5 valid suggestions per IP per hour.
 - The public suggestion endpoint does not use a REST nonce, so tabs kept open for days (common on iOS) do not fail with "Cookie check failed".
 - Leaflet 1.9.4 and Leaflet.markercluster 1.5.3 are bundled and loaded under their own handles (`mmp-leaflet`, `mmp-leaflet-cluster`). This avoids picking up another plugin's Leaflet (e.g. Otter Blocks registers `leaflet` with version 1.8.0).
@@ -71,7 +72,7 @@ add_filter( 'mmp_markers', function ( array $markers ) {
         'lng'           => 7.1393,
         'color'         => '#006666',
         'icon'          => '📅',
-        'type'          => 'event', // calendar-style marker instead of a pin
+        'type'          => 'event', // square marker in the category colour with a calendar symbol
         'category_id'   => 'termine-wettkampf',
         'category_name' => 'Wettkampf',
         'images'        => array(),

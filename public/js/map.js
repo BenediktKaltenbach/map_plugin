@@ -178,19 +178,21 @@ function initMap() {
     });
   }
 
-  // Termine (type "event"): abgerundetes Quadrat mit Kalender-Symbol statt Tropfen.
-  function makeEventIcon(color, symbol) {
+  // Termine (type "event"): Quadrat in der Kategoriefarbe mit weißem Kalender-Symbol.
+  // Kein Emoji – das überdeckte die Farbe, die man in der Legende wiederfinden soll.
+  function makeEventIcon(color) {
+    const kalender = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
     return L.divIcon({
       className: 'mmp-leaflet-icon mmp-event-icon',
       html: `<div style="
         background:${color};
         width:30px; height:30px;
-        border-radius:8px;
+        border-radius:7px;
         border:3px solid #fff;
         box-shadow:0 2px 8px rgba(0,0,0,.3);
         display:flex; align-items:center; justify-content:center;
-        font-size:15px; line-height:1;
-      ">${escHtml(symbol || '📅')}</div>`,
+      ">${kalender}</div>`,
       iconSize: [30, 30],
       iconAnchor: [15, 15],
       popupAnchor: [0, -18],
@@ -228,7 +230,7 @@ function initMap() {
     const visible = markerData.filter((m) => activeCategories.has(String(m.category_id)));
 
     visible.forEach((m) => {
-      const icon = m.type === 'event' ? makeEventIcon(m.color, m.icon) : makeIcon(m.color);
+      const icon = m.type === 'event' ? makeEventIcon(m.color) : makeIcon(m.color);
 
       let imagesHtml = '';
       if (m.images && m.images.length > 0) {
@@ -305,8 +307,9 @@ function initMap() {
         L.DomEvent.disableClickPropagation(div);
         L.DomEvent.disableScrollPropagation(div);
 
+        // Kategorien anderer Plugins (z. B. Termine) mit eckigem Kästchen – passend zum Marker.
         const eintrag = (c) =>
-          `<label class="mmp-legend-item mmp-legend-active" data-cat-id="${escHtml(String(c.id))}">
+          `<label class="mmp-legend-item mmp-legend-active${c.group ? ' mmp-legend-group-item' : ''}" data-cat-id="${escHtml(String(c.id))}">
             <span class="mmp-legend-checkbox checked"
                   style="border-color:${c.color}; background:${c.color};">
               <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -44,6 +44,11 @@
   display: inline !important;
 }
 
+/* Legende: Termine & Co. mit eckigem Kästchen wie ihre Marker. */
+.mmp-legend-group-item .mmp-legend-checkbox {
+  border-radius: 4px !important;
+}
+
 /* Popup-Bilder: gegen die Regel oben wieder begrenzen. */
 #mmp-public-map img.mmp-popup-img {
   width: 100% !important;

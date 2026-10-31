@@ -294,6 +294,8 @@ class MMP_Admin {
             update_option('mmp_center_lng',  floatval($_POST['center_lng']));
             update_option('mmp_default_zoom', absint($_POST['default_zoom']));
             update_option('mmp_allow_suggestions', isset($_POST['allow_suggestions']) ? 1 : 0);
+            $adresse = sanitize_email(wp_unslash($_POST['review_email'] ?? ''));
+            update_option('mmp_review_email', is_email($adresse) ? $adresse : '', false);
             update_option('mmp_map_height',  absint($_POST['map_height']));
             echo '<div class="notice notice-success"><p>Einstellungen gespeichert.</p></div>';
         }
@@ -335,6 +337,13 @@ class MMP_Admin {
                                    <?= checked(1, get_option('mmp_allow_suggestions', 1), false) ?>>
                             Vorschläge von Besuchern erlauben
                         </label>
+                    </div>
+                    <div class="mmp-field">
+                        <label>E-Mail für neue Vorschläge</label>
+                        <input type="email" name="review_email"
+                               value="<?= esc_attr(get_option('mmp_review_email', '')) ?>"
+                               placeholder="<?= esc_attr(get_option('admin_email')) ?>">
+                        <p class="description">Jeder Vorschlag geht mit Links „Freigeben“ und „Ablehnen“ an diese Adresse (leer: Admin-E-Mail von WordPress). Nach der Freigabe bekommt der Einsender eine Dankes-Mail, falls er eine Adresse angegeben hat.</p>
                     </div>
 
                     <button type="submit" name="mmp_save_settings" class="mmp-btn mmp-btn-primary">

@@ -165,15 +165,8 @@ class MMP_RestAPI {
             update_post_meta($post_id, $key, $data[$key] ?? '');
         }
 
-        // Admin per E-Mail benachrichtigen
-        wp_mail(
-            get_option('admin_email'),
-            'Neuer Kartenvorschlag: ' . $data['title'],
-            "Ein neuer Marker wurde vorgeschlagen und wartet auf Freigabe:\n\n" .
-            "Name: {$data['title']}\n" .
-            "Von: {$data['submitter_name']} ({$data['submitter_email']})\n\n" .
-            admin_url('admin.php?page=mmp-suggestions')
-        );
+        // Mail mit Freigeben-/Ablehnen-Links an die Adresse aus den Einstellungen
+        MMP_Review::neu($post_id);
 
         return new \WP_REST_Response(['success' => true, 'message' => 'Vorschlag eingereicht. Danke!'], 201);
     }
@@ -250,6 +243,7 @@ class MMP_RestAPI {
         if (is_wp_error($result)) {
             return new \WP_Error('approve_failed', 'Freigabe fehlgeschlagen.', ['status' => 500]);
         }
+        MMP_Review::nach_freigabe($id);
 
         return new \WP_REST_Response(['success' => true], 200);
     }
