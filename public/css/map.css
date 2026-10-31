@@ -1,0 +1,323 @@
+/* ─── MMP Public Map CSS ─────────────────────────────────────────── */
+
+/* Alles innerhalb des Wrappers vom Theme isolieren */
+.mmp-public-wrap,
+.mmp-public-wrap * {
+  box-sizing: border-box;
+}
+
+.mmp-public-wrap {
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Karte — Wrapper übernimmt border-radius + overflow:hidden
+   Das map-div selbst darf KEIN overflow:hidden haben — Safari-Bug.
+   KEIN translateZ(0)/transform hier — das kollidiert mit Leaflets
+   eigenen internen Transforms und kann WebKit-Kompositierung
+   noch mehr durcheinanderbringen (bekanntes iOS-Problem). */
+.mmp-map-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  position: relative;
+}
+
+#mmp-public-map {
+  width: 100% !important;
+  min-height: 200px;
+  position: relative;
+  display: block;
+}
+
+/* Leaflet-interne Elemente vor Theme-CSS schützen */
+#mmp-public-map img {
+  max-width: none !important;   /* Theme img{max-width:100%} zerstört Tiles */
+  max-height: none !important;
+  width: auto !important;
+  height: auto !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  display: inline !important;
+}
+
+/* Tile-Bilder explizit */
+#mmp-public-map .leaflet-tile {
+  width: 256px !important;
+  height: 256px !important;
+}
+
+/* Leaflet Controls vor z-index-Konflikten schützen */
+#mmp-public-map .leaflet-control {
+  z-index: 1000;
+  position: relative;
+}
+
+/* Popup vor Theme-Styles schützen */
+#mmp-public-map .leaflet-popup-content-wrapper {
+  border-radius: 10px !important;
+  box-shadow: 0 3px 14px rgba(0,0,0,.2) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+#mmp-public-map .leaflet-popup-content {
+  margin: 12px 16px !important;
+  line-height: 1.5 !important;
+  font-size: 14px !important;
+}
+#mmp-public-map .leaflet-popup-content p {
+  margin: 6px 0 !important;
+}
+
+
+/* Bilder im Popup */
+.mmp-popup-images {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.mmp-popup-img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+.mmp-popup-images .mmp-popup-img:not(:first-child) {
+  width: calc(50% - 3px);
+  max-height: 80px;
+}
+
+/* Leaflet Popup anpassen */
+.mmp-popup-inner strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+.mmp-popup-inner .mmp-popup-cat {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.mmp-popup-inner .mmp-popup-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+/* Leaflet icon override */
+.mmp-leaflet-icon { background: none !important; border: none !important; }
+
+/* Cluster */
+.mmp-cluster {
+  background: #1f2937;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Legende */
+.leaflet-control.mmp-legend {
+  background: rgba(255,255,255,.95);
+  backdrop-filter: blur(8px);
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+  min-width: 140px;
+}
+.mmp-legend h4 {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #6b7280;
+}
+.mmp-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 0.82rem;
+  color: #1f2937;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: opacity .15s, background .15s;
+  user-select: none;
+}
+.mmp-legend-item:hover {
+  background: #f3f4f6;
+}
+.mmp-legend-inactive {
+  opacity: 0.4;
+}
+.mmp-legend-checkbox {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 4px;
+  border: 2px solid #999;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s;
+  flex-shrink: 0;
+}
+.mmp-legend-checkbox.checked {
+  /* Farbe wird per inline style gesetzt */
+}
+.mmp-legend-checkbox svg {
+  width: 10px;
+  height: 10px;
+  display: block;
+}
+.mmp-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Vorschlagsformular */
+.mmp-suggest-toggle {
+  margin-top: 12px;
+  text-align: right;
+}
+.mmp-suggest-btn {
+  background: #1f2937;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+}
+.mmp-suggest-btn:hover { background: #374151; }
+
+.mmp-suggest-form {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.mmp-suggest-form h3 {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+.mmp-form-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0 0 16px;
+}
+.mmp-pub-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.mmp-pub-field label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+.mmp-pub-field input,
+.mmp-pub-field select,
+.mmp-pub-field textarea {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.mmp-pub-field textarea { resize: vertical; }
+.mmp-req { color: #dc2626; }
+
+.mmp-coords-hint {
+  font-size: 0.8rem;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+.mmp-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.mmp-pub-btn {
+  padding: 9px 20px;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background .15s;
+}
+.mmp-pub-btn-primary   { background: #2563eb; color: #fff; }
+.mmp-pub-btn-primary:hover { background: #1d4ed8; }
+.mmp-pub-btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+/* Feedback */
+#mmp-suggest-feedback {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+#mmp-suggest-feedback.success { background: #dcfce7; color: #166534; }
+#mmp-suggest-feedback.error   { background: #fee2e2; color: #991b1b; }
+
+/* Toolbar im Vorschlagsformular */
+.mmp-pub-toolbar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.mmp-pub-toolbar-btn {
+  padding: 4px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  background: #f9fafb;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background .15s;
+}
+.mmp-pub-toolbar-btn:hover { background: #e5e7eb; }
+.mmp-pub-toolbar-bold { font-weight: 700; font-family: serif; }
+
+/* Honeypot */
+.mmp-hp-field {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+}
+
+.hidden { display: none !important; }
