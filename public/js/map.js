@@ -408,7 +408,7 @@ function initMap() {
     toggleBtn.addEventListener('click', () => {
       form.classList.toggle('hidden');
       isSuggesting = !form.classList.contains('hidden');
-      toggleBtn.textContent = isSuggesting ? '✕ Schließen' : '📍 Ort vorschlagen';
+      toggleBtn.textContent = isSuggesting ? '✕ Schließen' : '📍 Festen Ort vorschlagen';
 
       if (isSuggesting) {
         coordsDisp.textContent = '📍 Klicke auf die Karte um den Ort zu markieren';
@@ -421,7 +421,7 @@ function initMap() {
     cancelBtn?.addEventListener('click', () => {
       form.classList.add('hidden');
       isSuggesting = false;
-      toggleBtn.textContent = '📍 Ort vorschlagen';
+      toggleBtn.textContent = '📍 Festen Ort vorschlagen';
       if (suggestionPinMarker) { suggestionPinMarker.remove(); suggestionPinMarker = null; }
       clearCoords();
     });

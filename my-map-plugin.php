@@ -2,7 +2,7 @@
 /**
  * Plugin Name: My Map Plugin
  * Description: Interaktive Leaflet-Karte mit Marker-Kategorien und Nutzervorschlägen.
- * Version:     1.3.0
+ * Version:     1.4.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Author:      Deutscher Tretroller Verband e.V.
@@ -14,7 +14,7 @@ defined('ABSPATH') || exit;
 
 define('MMP_PATH', plugin_dir_path(__FILE__));
 define('MMP_URL',  plugin_dir_url(__FILE__));
-define('MMP_VERSION', '1.3.0');
+define('MMP_VERSION', '1.4.0');
 
 require_once MMP_PATH . 'includes/class-cpt.php';
 require_once MMP_PATH . 'includes/class-sanitizer.php';

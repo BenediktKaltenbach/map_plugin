@@ -294,6 +294,7 @@ class MMP_Admin {
             update_option('mmp_center_lng',  floatval($_POST['center_lng']));
             update_option('mmp_default_zoom', absint($_POST['default_zoom']));
             update_option('mmp_allow_suggestions', isset($_POST['allow_suggestions']) ? 1 : 0);
+            update_option('mmp_termin_url', esc_url_raw(wp_unslash($_POST['termin_url'] ?? '')), false);
             $adresse = sanitize_email(wp_unslash($_POST['review_email'] ?? ''));
             update_option('mmp_review_email', is_email($adresse) ? $adresse : '', false);
             update_option('mmp_map_height',  absint($_POST['map_height']));
@@ -337,6 +338,13 @@ class MMP_Admin {
                                    <?= checked(1, get_option('mmp_allow_suggestions', 1), false) ?>>
                             Vorschläge von Besuchern erlauben
                         </label>
+                    </div>
+                    <div class="mmp-field">
+                        <label>Seite „Termin einreichen“ (optional)</label>
+                        <input type="url" name="termin_url"
+                               value="<?= esc_attr(get_option('mmp_termin_url', '')) ?>"
+                               placeholder="automatisch, wenn DTRV-Termine aktiv ist">
+                        <p class="description">Unter der Karte erscheint neben „Festen Ort vorschlagen“ ein Knopf „Termin einreichen“, der hierhin führt. Leer lassen: DTRV-Termine findet die Seite mit seinem Formular selbst.</p>
                     </div>
                     <div class="mmp-field">
                         <label>E-Mail für neue Vorschläge</label>

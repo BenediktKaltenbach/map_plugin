@@ -41,22 +41,37 @@ class MMP_MapShortcode {
 
         $height = intval($atts['height']);
 
+        // Zweiter Weg neben „Ort vorschlagen“: Termin einreichen (Seite mit dem Termin-Formular).
+        // Adresse aus den Einstellungen; andere Plugins (DTRV-Termine) liefern sie über den Filter.
+        $termin_url = (string) apply_filters('mmp_termin_url', (string) get_option('mmp_termin_url', ''));
+        $vorschlaege = (bool) get_option('mmp_allow_suggestions', 1);
+
         ob_start(); ?>
         <div class="mmp-public-wrap">
             <div class="mmp-map-wrapper">
                 <div id="mmp-public-map" style="height: <?= $height ?>px;"></div>
             </div>
 
-            <?php if (get_option('mmp_allow_suggestions', 1)): ?>
+            <?php if ($vorschlaege || $termin_url !== ''): ?>
             <div class="mmp-suggest-toggle">
+                <?php if ($termin_url !== ''): ?>
+                <a class="mmp-suggest-btn mmp-termin-btn" href="<?= esc_url($termin_url) ?>">
+                    📅 Termin einreichen
+                </a>
+                <?php endif; ?>
+                <?php if ($vorschlaege): ?>
                 <button class="mmp-suggest-btn" id="mmp-suggest-toggle">
-                    📍 Ort vorschlagen
+                    📍 Festen Ort vorschlagen
                 </button>
+                <?php endif; ?>
             </div>
+            <?php endif; ?>
+
+            <?php if ($vorschlaege): ?>
 
             <div class="mmp-suggest-form hidden" id="mmp-suggest-form">
-                <h3>Neuen Ort vorschlagen</h3>
-                <p class="mmp-form-hint">Dein Vorschlag wird vor der Veröffentlichung geprüft.</p>
+                <h3>Festen Ort vorschlagen</h3>
+                <p class="mmp-form-hint">Für Orte, die dauerhaft da sind – z. B. Strecken, Treffpunkte, Vereine. Einmalige Veranstaltungen bitte über „Termin einreichen“. Dein Vorschlag wird vor der Veröffentlichung geprüft.</p>
 
                 <!-- Honeypot-Feld (versteckt für Bots, sichtbar im HTML) -->
                 <div class="mmp-hp-field" aria-hidden="true">

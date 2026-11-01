@@ -222,7 +222,16 @@
 /* Vorschlagsformular */
 .mmp-suggest-toggle {
   margin-top: 12px;
-  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+a.mmp-suggest-btn {
+  display: inline-block;
+  text-decoration: none !important;
+  color: #fff !important;
+  line-height: 1.4;
 }
 .mmp-suggest-btn {
   background: #1f2937;
