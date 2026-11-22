@@ -43,14 +43,14 @@ After activation the WordPress menu has:
 - **Marker** – manage markers on the map, add new ones (with images from the media library)
 - **Vorschläge** – review visitor suggestions, approve or reject them
 - **Kategorien** – categories with colours and icons, plus which categories are visible when the map loads
-- **Mitfahrer finden** – entries of people who want to be found by other riders, plus settings (on/off, colour, interests, minimum age)
+- **Mitfahrer finden** – entries of people who want to be found by other riders, plus settings (on/off, colour, interests)
 - **Einstellungen** – default zoom, map centre, map height, suggestions on/off
 
 ## Mitfahrer finden (find riders nearby)
 
 Off by default; switch it on under **Mitfahrer finden › Einstellungen** once the privacy policy covers it (WordPress shows a suggested section under Settings › Privacy › Policy Guide).
 
-- **Sign-up:** clicking "Mitfahrer finden" in the legend opens a dialog. People enter a display name, postcode (DE/AT/CH), email, interests and an optional short text, confirm their age and consent, and get a confirmation link (double opt-in). Only after confirming do they appear on the map.
+- **Sign-up:** clicking "Mitfahrer finden" in the legend opens a dialog. People enter a display name, postcode (DE/AT/CH), email, interests and an optional short text, give their consent, and get a confirmation link (double opt-in). Only after confirming do they appear on the map.
 - **Rough position only:** the postcode is turned into its centre via OpenStreetMap Nominatim (own user agent, max. one request per second, cached for a year), then shifted by a fixed random 1–2 km. No address is stored.
 - **Visibility:** visitors without an entry see anonymous points and a count; people with an entry see names, interests, text and a "Kontaktieren" button. The category starts hidden; show it on a page with `[my_map einblenden="mitfahrer-finden"]`.
 - **Contact without revealing addresses:** messages are mailed by the site with `Reply-To` set to the sender, so the recipient's address stays hidden until they reply. Limits: 5 messages per day per sender, 1 per recipient per day. Each mail has links to report the sender and to pause or delete one's own entry.

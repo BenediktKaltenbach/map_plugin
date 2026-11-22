@@ -46,10 +46,6 @@ class MMP_Mitfahrer {
         return array_values(array_unique(array_filter(array_map('sanitize_text_field', explode("\n", $roh)))));
     }
 
-    public static function mindestalter(): int {
-        return (int) get_option('mmp_mitfahrer_alter', 18) === 16 ? 16 : 18;
-    }
-
     public static function registrieren(): void {
         register_post_type(self::TYP, [
             'label'    => 'Mitfahrer',
@@ -494,8 +490,8 @@ class MMP_Mitfahrer {
             if (!is_email($email)) {
                 return self::fehler('Bitte gib eine gültige E-Mail-Adresse an.');
             }
-            if (empty($d['alter']) || empty($d['einwilligung'])) {
-                return self::fehler('Bitte bestätige dein Alter und die Einwilligung zum Datenschutz.');
+            if (empty($d['einwilligung'])) {
+                return self::fehler('Bitte bestätige die Einwilligung zum Datenschutz.');
             }
             $daten['email'] = $email;
         }
@@ -588,7 +584,6 @@ class MMP_Mitfahrer {
             'personen'     => $personen,
             'tags'         => self::tags(),
             'laender'      => self::LAENDER,
-            'mindestalter' => self::mindestalter(),
             'datenschutz'  => (string) get_privacy_policy_url(),
         ]);
     }
@@ -639,10 +634,7 @@ class MMP_Mitfahrer {
         }
         self::speichern($id, $daten);
         update_post_meta($id, '_mmp_seite', esc_url_raw((string) ($d['seite'] ?? '')));
-        update_post_meta($id, '_mmp_einwilligung', [
-            'zeit'  => time(),
-            'alter' => self::mindestalter(),
-        ]);
+        update_post_meta($id, '_mmp_einwilligung', ['zeit' => time()]);
 
         self::limit_zaehlen('ein_' . self::ip(), HOUR_IN_SECONDS);
         self::limit_zaehlen('mail_' . md5($daten['email']), HOUR_IN_SECONDS);
@@ -828,7 +820,6 @@ class MMP_Mitfahrer {
             update_option('mmp_mitfahrer_aktiv', isset($_POST['aktiv']) ? 1 : 0);
             update_option('mmp_mitfahrer_farbe', sanitize_hex_color(wp_unslash($_POST['farbe'] ?? '')) ?: '#0284c7', false);
             update_option('mmp_mitfahrer_tags', sanitize_textarea_field(wp_unslash($_POST['tags'] ?? '')) ?: self::TAGS_STANDARD, false);
-            update_option('mmp_mitfahrer_alter', (int) ($_POST['alter'] ?? 18) === 16 ? 16 : 18, false);
             echo '<div class="notice notice-success"><p>Einstellungen gespeichert.</p></div>';
         }
         if (isset($_POST['mmp_mf_tun'], $_POST['id'])) {
@@ -910,13 +901,6 @@ class MMP_Mitfahrer {
                     <div class="mmp-field">
                         <label>Interessen (eine pro Zeile)</label>
                         <textarea name="tags" rows="9"><?= esc_textarea(implode("\n", self::tags())) ?></textarea>
-                    </div>
-                    <div class="mmp-field">
-                        <label>Mindestalter</label>
-                        <select name="alter">
-                            <option value="18" <?= selected(self::mindestalter(), 18, false) ?>>18 Jahre</option>
-                            <option value="16" <?= selected(self::mindestalter(), 16, false) ?>>16 Jahre</option>
-                        </select>
                     </div>
                     <button type="submit" name="mmp_mf_einstellungen" class="mmp-btn mmp-btn-primary">Speichern</button>
                 </form>

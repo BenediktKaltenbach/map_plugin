@@ -262,7 +262,6 @@ function startMitfahrer(k) {
       </div>
       <div class="mmp-hp-field" aria-hidden="true"><label>Website</label><input type="text" id="mmp-mf-hp" tabindex="-1" autocomplete="off"></div>
       <p class="mmp-mf-hinweis">Anzeigename, Interessen und Text sehen alle, die sich ebenfalls eingetragen haben. Da sich jede Person eintragen kann, ist das praktisch öffentlich: Trag nichts ein, was nicht öffentlich sein soll.</p>
-      <label class="mmp-mf-check"><input type="checkbox" id="mmp-mf-alter"> Ich bin mindestens ${daten.mindestalter || 18} Jahre alt.</label>
       <label class="mmp-mf-check"><input type="checkbox" id="mmp-mf-ok"> Ich bin einverstanden, dass meine Angaben wie beschrieben gespeichert und angezeigt werden (${ds}). Ich kann meinen Eintrag jederzeit löschen.</label>
       <div class="mmp-mf-fehler" role="alert"></div>
       <div class="mmp-form-actions">
@@ -274,7 +273,6 @@ function startMitfahrer(k) {
     knopf.addEventListener('click', async () => {
       const res = await senden(knopf, '/mitfahrer/eintragen', Object.assign(felderLesen(), {
         email:        inhalt.querySelector('#mmp-mf-email').value,
-        alter:        inhalt.querySelector('#mmp-mf-alter').checked,
         einwilligung: inhalt.querySelector('#mmp-mf-ok').checked,
         website:      inhalt.querySelector('#mmp-mf-hp').value,
         seite:        seitenAdresse(),
