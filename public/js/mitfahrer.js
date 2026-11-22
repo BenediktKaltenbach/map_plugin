@@ -67,7 +67,7 @@ function startMitfahrer(k) {
     if (!daten.angemeldet) {
       return `<div class="mmp-popup-inner">
         <strong>Hier fährt jemand Tretroller</strong>
-        <div class="mmp-popup-text">Trag dich ein, um zu sehen, wer hier fährt, und Kontakt aufzunehmen.</div>
+        <div class="mmp-popup-text">Trag dich ein, um zu sehen, wer hier fährt, und eine Nachricht zu schicken.</div>
         <button type="button" class="mmp-pub-btn mmp-pub-btn-primary mmp-mf-mitmachen">Mitmachen</button>
       </div>`;
     }
@@ -117,6 +117,8 @@ function startMitfahrer(k) {
 
   kat.beimSchalten = (an) => {
     if (!an) { zaehlerAktualisieren(); return; }
+    // Beim Einblenden erst einmal nur Mitfahrer zeigen, damit man sie zwischen Vereinen und Terminen findet.
+    if (k.nurDiese) k.nurDiese();
     (daten ? Promise.resolve(daten) : (geladen || laden())).then(() => {
       zaehlerAktualisieren();
       // Beim ersten Einblenden ohne Eintrag gleich fragen, ob man mitmachen will.
@@ -198,7 +200,8 @@ function startMitfahrer(k) {
     sicher().then(() => {
       if (daten && daten.angemeldet) { zeigeIch(); return; }
       oeffnen(`<h3 id="mmp-mf-titel">Mitfahrer finden</h3>
-        <p>Trag dich auf der Tretrollerkarte ein und finde Leute in deiner Nähe, die auch Tretroller fahren. Deine E-Mail-Adresse bleibt verborgen, Kontakt läuft über die Website.</p>
+        <p>Trag dich auf der Tretrollerkarte ein und finde Leute in deiner Nähe, die auch Tretroller fahren.</p>
+        <p class="mmp-mf-klein">So läuft der Kontakt: Punkt anklicken, Nachricht schreiben – wir leiten sie per E-Mail weiter. Deine Adresse sieht nur, wem du schreibst oder antwortest.</p>
         <div class="mmp-mf-wahl">
           <button type="button" class="mmp-pub-btn mmp-pub-btn-primary mmp-mf-neu">Noch nicht dabei? Trag dich ein</button>
           <button type="button" class="mmp-pub-btn mmp-pub-btn-secondary mmp-mf-login">Schon dabei? Anmelden</button>
@@ -258,7 +261,7 @@ function startMitfahrer(k) {
       <div class="mmp-pub-field">
         <label for="mmp-mf-email">E-Mail <span class="mmp-req">*</span></label>
         <input type="email" id="mmp-mf-email" autocomplete="email">
-        <p class="mmp-mf-klein">Wird nie angezeigt. Du bekommst einen Bestätigungslink.</p>
+        <p class="mmp-mf-klein">Wird nie angezeigt. Hierhin leiten wir Nachrichten an dich weiter; zuerst kommt ein Bestätigungslink.</p>
       </div>
       <div class="mmp-hp-field" aria-hidden="true"><label>Website</label><input type="text" id="mmp-mf-hp" tabindex="-1" autocomplete="off"></div>
       <p class="mmp-mf-hinweis">Anzeigename, Interessen und Text sehen alle, die sich ebenfalls eingetragen haben. Da sich jede Person eintragen kann, ist das praktisch öffentlich: Trag nichts ein, was nicht öffentlich sein soll.</p>
@@ -352,7 +355,7 @@ function startMitfahrer(k) {
         <label for="mmp-mf-nachricht">Deine Nachricht</label>
         <textarea id="mmp-mf-nachricht" rows="5" maxlength="1500" placeholder="Hallo, ich fahre auch in der Gegend …"></textarea>
       </div>
-      <p class="mmp-mf-hinweis">Deine E-Mail-Adresse wird an ${escHtml(p.name)} weitergegeben, damit ${escHtml(p.name)} dir antworten kann.</p>
+      <p class="mmp-mf-hinweis">Wir schicken deine Nachricht per E-Mail an ${escHtml(p.name)}. Dabei sieht ${escHtml(p.name)} deine E-Mail-Adresse und kann dir direkt antworten.</p>
       <div class="mmp-mf-fehler" role="alert"></div>
       <div class="mmp-form-actions">
         <button type="button" class="mmp-pub-btn mmp-pub-btn-secondary mmp-mf-abbrechen">Abbrechen</button>
@@ -388,11 +391,12 @@ function startMitfahrer(k) {
       meldung(
         zurueck === 'bestaetigt' ? 'Willkommen!' : 'Angemeldet',
         zurueck === 'bestaetigt'
-          ? 'Dein Eintrag ist bestätigt und jetzt auf der Karte. Klick auf andere Punkte, um zu sehen, wer in deiner Nähe fährt.'
+          ? 'Dein Eintrag ist bestätigt und jetzt auf der Karte. Klick auf andere Punkte, um zu sehen, wer in deiner Nähe fährt, und ihnen eine Nachricht zu schicken.'
           : 'Du bist auf diesem Gerät angemeldet.'
       );
     });
   } else if (k.istAn()) {
+    if (k.nurDiese) k.nurDiese();
     laden();
   }
 }

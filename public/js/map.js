@@ -182,6 +182,7 @@ function initMap() {
         kategorie: mitfahrerKat,
         istAn: () => activeCategories.has('mitfahrer'),
         einschalten: () => kategorieSchalten('mitfahrer', true),
+        nurDiese: () => nurKategorie('mitfahrer'),
         setzeMarker: (liste) => {
           allMarkers = allMarkers.filter((m) => m.category_id !== 'mitfahrer').concat(liste);
           renderMarkers(allMarkers);
@@ -390,18 +391,35 @@ function initMap() {
   // beimSchalten an der Kategorie reagieren.
   function kategorieSchalten(catId, an) {
     const cat = categories.find((c) => String(c.id) === catId);
-    const el  = document.querySelector(`.mmp-legend-item[data-cat-id="${CSS.escape ? CSS.escape(catId) : catId}"]`);
     if (an) activeCategories.add(catId); else activeCategories.delete(catId);
-    if (el) {
-      const box = el.querySelector('.mmp-legend-checkbox');
-      el.classList.toggle('mmp-legend-active', an);
-      el.classList.toggle('mmp-legend-inactive', !an);
-      box.classList.toggle('checked', an);
-      box.style.background  = an && cat ? cat.color : 'transparent';
-      box.style.borderColor = cat ? cat.color : '#999';
-    }
+    legendeSetzen(catId, an);
     renderMarkers(allMarkers);
     if (cat && typeof cat.beimSchalten === 'function') cat.beimSchalten(an);
+  }
+
+  // Nur diese Kategorie zeigen, alle anderen ausblenden (lassen sich danach wieder einschalten).
+  function nurKategorie(catId) {
+    categories.forEach((c) => {
+      const id = String(c.id);
+      if (id !== catId && activeCategories.has(id)) {
+        activeCategories.delete(id);
+        legendeSetzen(id, false);
+        if (typeof c.beimSchalten === 'function') c.beimSchalten(false);
+      }
+    });
+    renderMarkers(allMarkers);
+  }
+
+  function legendeSetzen(catId, an) {
+    const cat = categories.find((c) => String(c.id) === catId);
+    const el  = document.querySelector(`.mmp-legend-item[data-cat-id="${CSS.escape ? CSS.escape(catId) : catId}"]`);
+    if (!el) return;
+    const box = el.querySelector('.mmp-legend-checkbox');
+    el.classList.toggle('mmp-legend-active', an);
+    el.classList.toggle('mmp-legend-inactive', !an);
+    box.classList.toggle('checked', an);
+    box.style.background  = an && cat ? cat.color : 'transparent';
+    box.style.borderColor = cat ? cat.color : '#999';
   }
 
   // ─── Vorschlagsformular ───────────────────────────────────────────
