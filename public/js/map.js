@@ -173,6 +173,25 @@ function initMap() {
     renderMarkers(allMarkers);
     renderLegend(categories);
 
+    // „Mitfahrer finden“ (public/js/mitfahrer.js) bekommt Zugriff auf Karte, Marker und Legende.
+    const mitfahrerKat = categories.find((c) => String(c.id) === 'mitfahrer');
+    if (cfg.mitfahrer && window.MMP_Mitfahrer && mitfahrerKat) {
+      try {
+      window.MMP_Mitfahrer.start({
+        map, api, escHtml,
+        kategorie: mitfahrerKat,
+        istAn: () => activeCategories.has('mitfahrer'),
+        einschalten: () => kategorieSchalten('mitfahrer', true),
+        setzeMarker: (liste) => {
+          allMarkers = allMarkers.filter((m) => m.category_id !== 'mitfahrer').concat(liste);
+          renderMarkers(allMarkers);
+        },
+      });
+      } catch (e) {
+        console.error('MMP Mitfahrer:', e); // die übrige Karte soll trotzdem funktionieren
+      }
+    }
+
     if (cfg.allowSuggestions) {
       // Nur echte Kartenkategorien zur Auswahl, keine angezeigten Termine o. Ä.
       initSuggestionForm(alleKategorien.filter((c) => !c.virtual));
@@ -250,7 +269,8 @@ function initMap() {
     const visible = markerData.filter((m) => activeCategories.has(String(m.category_id)));
 
     visible.forEach((m) => {
-      const icon = m.type === 'event' ? makeEventIcon(m.color) : makeIcon(m.color);
+      // Punkte aus mitfahrer.js bringen Symbol und Popup selbst mit (_icon, _popup, _beimOeffnen).
+      const icon = m._icon || (m.type === 'event' ? makeEventIcon(m.color) : makeIcon(m.color));
 
       let imagesHtml = '';
       if (m.images && m.images.length > 0) {
@@ -261,7 +281,7 @@ function initMap() {
           `</div>`;
       }
 
-      const popup = `
+      const popup = m._popup || `
         <div class="mmp-popup-inner">
           ${imagesHtml}
           <strong>${escHtml(m.title)}</strong>
@@ -283,6 +303,7 @@ function initMap() {
           a.setAttribute('target', '_blank');
           a.setAttribute('rel', 'noopener noreferrer');
         });
+        if (m._beimOeffnen) m._beimOeffnen(popupEl);
       });
       clusterGroup.addLayer(lm);
     });
@@ -353,28 +374,8 @@ function initMap() {
         ).join('');
 
         div.querySelectorAll('.mmp-legend-item').forEach((el) => {
-          const catId = el.dataset.catId;
-          const cat   = cats.find((c) => String(c.id) === catId);
-          const box   = el.querySelector('.mmp-legend-checkbox');
-
           el.addEventListener('click', () => {
-            if (activeCategories.has(catId)) {
-              activeCategories.delete(catId);
-              el.classList.remove('mmp-legend-active');
-              el.classList.add('mmp-legend-inactive');
-              box.classList.remove('checked');
-              box.style.background    = 'transparent';
-              box.style.borderColor   = cat ? cat.color : '#999';
-            } else {
-              activeCategories.add(catId);
-              el.classList.remove('mmp-legend-inactive');
-              el.classList.add('mmp-legend-active');
-              box.classList.add('checked');
-              box.style.background    = cat ? cat.color : '#999';
-              box.style.borderColor   = cat ? cat.color : '#999';
-            }
-
-            renderMarkers(allMarkers);
+            kategorieSchalten(el.dataset.catId, !activeCategories.has(el.dataset.catId));
           });
         });
 
@@ -383,6 +384,24 @@ function initMap() {
     });
 
     new Legend({ position: 'bottomright' }).addTo(map);
+  }
+
+  // Kategorie ein-/ausblenden: Zustand, Legende und Marker. Module (z. B. Mitfahrer) können über
+  // beimSchalten an der Kategorie reagieren.
+  function kategorieSchalten(catId, an) {
+    const cat = categories.find((c) => String(c.id) === catId);
+    const el  = document.querySelector(`.mmp-legend-item[data-cat-id="${CSS.escape ? CSS.escape(catId) : catId}"]`);
+    if (an) activeCategories.add(catId); else activeCategories.delete(catId);
+    if (el) {
+      const box = el.querySelector('.mmp-legend-checkbox');
+      el.classList.toggle('mmp-legend-active', an);
+      el.classList.toggle('mmp-legend-inactive', !an);
+      box.classList.toggle('checked', an);
+      box.style.background  = an && cat ? cat.color : 'transparent';
+      box.style.borderColor = cat ? cat.color : '#999';
+    }
+    renderMarkers(allMarkers);
+    if (cat && typeof cat.beimSchalten === 'function') cat.beimSchalten(an);
   }
 
   // ─── Vorschlagsformular ───────────────────────────────────────────

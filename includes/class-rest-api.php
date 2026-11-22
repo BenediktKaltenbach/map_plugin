@@ -90,10 +90,14 @@ class MMP_RestAPI {
          */
         $categories = apply_filters('mmp_categories', $categories);
 
+        // 'hidden_default' (aus anderen Plugins/Modulen): ausgeblendet, bis jemand sie im Backend anhakt.
         $ausgeblendet = array_map('strval', (array) get_option('mmp_hidden_categories', []));
+        $gezeigt      = array_map('strval', (array) get_option('mmp_shown_categories', []));
         foreach ($categories as &$c) {
+            $id          = (string) $c['id'];
             $c['slug']   = self::kuerzel((string) $c['name']);
-            $c['hidden'] = in_array((string) $c['id'], $ausgeblendet, true);
+            $c['hidden'] = in_array($id, $ausgeblendet, true)
+                || (!empty($c['hidden_default']) && !in_array($id, $gezeigt, true));
             if (!empty($c['group'])) {
                 $c['group_slug'] = self::kuerzel((string) $c['group']);
             }

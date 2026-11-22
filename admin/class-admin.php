@@ -22,11 +22,16 @@ class MMP_Admin {
         add_submenu_page('mmp-map', 'Marker verwalten',  'Marker',                'manage_options', 'mmp-map',         [self::class, 'render_map_page']);
         add_submenu_page('mmp-map', 'Vorschläge',        'Vorschläge' . $badge,  'manage_options', 'mmp-suggestions', [self::class, 'render_suggestions_page']);
         add_submenu_page('mmp-map', 'Kategorien',        'Kategorien',            'manage_options', 'mmp-categories',  [self::class, 'render_categories_page']);
+        add_submenu_page('mmp-map', 'Mitfahrer finden',  'Mitfahrer finden',      'manage_options', 'mmp-mitfahrer',   ['MMP_Mitfahrer', 'admin_seite']);
         add_submenu_page('mmp-map', 'Einstellungen',     'Einstellungen',         'manage_options', 'mmp-settings',    [self::class, 'render_settings_page']);
     }
 
     public static function enqueue_assets(string $hook): void {
         $page = sanitize_key($_GET['page'] ?? '');
+        if ($page === 'mmp-mitfahrer') {
+            wp_enqueue_style('mmp-admin', MMP_URL . 'admin/admin.css', [], MMP_VERSION);
+            return;
+        }
         $plugin_pages = ['mmp-map', 'mmp-suggestions', 'mmp-categories', 'mmp-settings'];
 
         if (!in_array($page, $plugin_pages, true)) return;
@@ -218,6 +223,7 @@ class MMP_Admin {
                 }
             }
             update_option('mmp_hidden_categories', $ausgeblendet, false);
+            update_option('mmp_shown_categories', $sichtbar, false);
             echo '<div class="notice notice-success"><p>Sichtbarkeit gespeichert.</p></div>';
         }
 

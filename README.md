@@ -43,7 +43,21 @@ After activation the WordPress menu has:
 - **Marker** – manage markers on the map, add new ones (with images from the media library)
 - **Vorschläge** – review visitor suggestions, approve or reject them
 - **Kategorien** – categories with colours and icons, plus which categories are visible when the map loads
+- **Mitfahrer finden** – entries of people who want to be found by other riders, plus settings (on/off, colour, interests, minimum age)
 - **Einstellungen** – default zoom, map centre, map height, suggestions on/off
+
+## Mitfahrer finden (find riders nearby)
+
+Off by default; switch it on under **Mitfahrer finden › Einstellungen** once the privacy policy covers it (WordPress shows a suggested section under Settings › Privacy › Policy Guide).
+
+- **Sign-up:** clicking "Mitfahrer finden" in the legend opens a dialog. People enter a display name, postcode (DE/AT/CH), email, interests and an optional short text, confirm their age and consent, and get a confirmation link (double opt-in). Only after confirming do they appear on the map.
+- **Rough position only:** the postcode is turned into its centre via OpenStreetMap Nominatim (own user agent, max. one request per second, cached for a year), then shifted by a fixed random 1–2 km. No address is stored.
+- **Visibility:** visitors without an entry see anonymous points and a count; people with an entry see names, interests, text and a "Kontaktieren" button. The category starts hidden; show it on a page with `[my_map einblenden="mitfahrer-finden"]`.
+- **Contact without revealing addresses:** messages are mailed by the site with `Reply-To` set to the sender, so the recipient's address stays hidden until they reply. Limits: 5 messages per day per sender, 1 per recipient per day. Each mail has links to report the sender and to pause or delete one's own entry.
+- **Login:** an HttpOnly, SameSite=Lax cookie (12 months) holds a session token; only its hash is stored. On another device, people request a one-time login link (valid 30 minutes). The response is always the same, so nobody can find out which addresses are registered. Links from mails open a page with a button first, so mail scanners cannot use them up.
+- **Self-service:** "Mein Eintrag" lets people edit, pause, delete, log out on this device or on all devices.
+- **Housekeeping (daily WP-Cron):** unconfirmed entries are deleted after 7 days; after 12 months without use people get a reminder, and the entry is deleted 4 weeks later unless they click "Ich bleibe dabei".
+- New entries and reports are mailed to the review address.
 
 ## Security and robustness
 
@@ -113,8 +127,10 @@ my-map-plugin/
 ├── includes/
 │   ├── class-cpt.php          # custom post types (mmp_marker, mmp_category)
 │   ├── class-sanitizer.php    # input sanitising
-│   └── class-rest-api.php     # REST endpoints (my-map/v1)
+│   ├── class-rest-api.php     # REST endpoints (my-map/v1)
+│   ├── class-review.php       # review suggestions by mail
+│   └── class-mitfahrer.php    # Mitfahrer finden (entries, login, contact, admin page)
 ├── admin/                     # admin pages, admin map and marker picker
-├── public/                    # shortcode, front-end map, suggestion form
+├── public/                    # shortcode, front-end map, suggestion form, Mitfahrer finden (mitfahrer.js)
 └── assets/leaflet/            # Leaflet 1.9.4, MarkerCluster 1.5.3
 ```

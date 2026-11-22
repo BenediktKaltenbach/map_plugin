@@ -36,7 +36,12 @@ class MMP_MapShortcode {
         wp_enqueue_script('mmp-leaflet-cluster', MMP_URL . 'assets/leaflet/leaflet.markercluster.js', ['mmp-leaflet'], '1.5.3', true);
 
         wp_enqueue_style('mmp-public', MMP_URL . 'public/css/map.css', ['mmp-leaflet'], MMP_VERSION);
-        wp_enqueue_script('mmp-public', MMP_URL . 'public/js/map.js', ['mmp-leaflet', 'mmp-leaflet-cluster'], MMP_VERSION, true);
+        $abhaengig = ['mmp-leaflet', 'mmp-leaflet-cluster'];
+        if (MMP_Mitfahrer::aktiv()) {
+            wp_enqueue_script('mmp-mitfahrer', MMP_URL . 'public/js/mitfahrer.js', ['mmp-leaflet'], MMP_VERSION, true);
+            $abhaengig[] = 'mmp-mitfahrer';
+        }
+        wp_enqueue_script('mmp-public', MMP_URL . 'public/js/map.js', $abhaengig, MMP_VERSION, true);
 
         // Kein REST-Nonce: Vorschläge sind öffentlich, und ein veralteter Nonce (iOS hält Tabs
         // tagelang offen) würde jede Anfrage mit 403 „Cookie check failed“ scheitern lassen.
@@ -49,6 +54,7 @@ class MMP_MapShortcode {
             'einblenden'      => $liste($atts['einblenden']),
             'ausblenden'      => $liste($atts['ausblenden']),
             'nur'             => $liste($atts['nur']),
+            'mitfahrer'       => MMP_Mitfahrer::aktiv(),
         ]);
 
         $height = intval($atts['height']);

@@ -354,3 +354,123 @@ a.mmp-suggest-btn {
 }
 
 .hidden { display: none !important; }
+
+/* ─── Mitfahrer finden ───────────────────────────────────────────── */
+
+.mmp-mf-tags { margin: 6px 0; display: flex; flex-wrap: wrap; gap: 4px; }
+.mmp-mf-tag {
+  font-size: 0.75rem;
+  background: #eff6ff;
+  color: #1e40af;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.mmp-popup-inner .mmp-pub-btn { margin-top: 8px; }
+.mmp-mf-klein { font-size: 0.8rem; color: #6b7280; margin: 4px 0; }
+
+/* Zähler oben rechts in der Karte */
+.leaflet-control.mmp-mf-zaehler {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  padding: 6px 8px 6px 12px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mmp-mf-zaehler button {
+  background: #1f2937;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* Fenster über der ganzen Seite (liegt außerhalb von .mmp-public-wrap, daher eigene Grundwerte) */
+.mmp-mf-overlay {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  z-index: 100000;
+  background: rgba(17, 24, 39, .55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5vh 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.mmp-mf-overlay *, .mmp-mf-overlay *::before, .mmp-mf-overlay *::after { box-sizing: border-box; }
+.mmp-mf-dialog {
+  position: relative;
+  background: #fff;
+  color: #111827;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.25);
+  width: 100%;
+  max-width: 460px;
+  padding: 24px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+.mmp-mf-dialog h3 { margin: 0 32px 12px 0; font-size: 1.15rem; }
+.mmp-mf-dialog p { margin: 0 0 12px; }
+.mmp-mf-zu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #374151;
+}
+.mmp-mf-wahl { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.mmp-mf-wahl .mmp-pub-btn { width: 100%; padding: 12px; font-size: 0.95rem; }
+.mmp-mf-reihe { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mmp-mf-tagwahl { border: none; padding: 0; margin: 0 0 14px; }
+.mmp-mf-tagwahl legend { font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 6px; padding: 0; }
+.mmp-mf-tagwahl > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.mmp-mf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.mmp-mf-chip:has(input:checked) { background: #eff6ff; border-color: #2563eb; }
+.mmp-mf-check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.85rem; margin: 0 0 10px; }
+.mmp-mf-check input { margin-top: 3px; flex: none; }
+.mmp-mf-hinweis {
+  font-size: 0.8rem;
+  background: #fffbeb;
+  color: #92400e;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.mmp-mf-fehler { color: #991b1b; font-size: 0.875rem; }
+.mmp-mf-fehler:empty { display: none; }
+.mmp-mf-fehler:not(:empty) { background: #fee2e2; border-radius: 6px; padding: 8px 12px; margin-top: 8px; }
+.mmp-mf-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 18px; border-top: 1px solid #e5e7eb; padding-top: 12px; }
+.mmp-mf-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #2563eb;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.mmp-mf-weg { color: #dc2626; }
+.mmp-mf-dialog input, .mmp-mf-dialog select, .mmp-mf-dialog textarea { font-size: max(16px, 1rem); }
+.mmp-mf-dialog .mmp-pub-field input[type=checkbox] { width: auto; padding: 0; margin: 0; }
