@@ -14,7 +14,16 @@ class MMP_MapShortcode {
             'zoom'   => get_option('mmp_default_zoom', 6),
             'lat'    => get_option('mmp_center_lat', 51.163),
             'lng'    => get_option('mmp_center_lng', 10.447),
+            // Kategorien pro Seite abweichend vom Backend: Kürzel, IDs oder Gruppen, mit Komma
+            // getrennt, z. B. einblenden="termine" oder nur="wettkampf,training". „alle“ = alle.
+            'einblenden' => '',
+            'ausblenden' => '',
+            'nur'        => '',
         ], $atts, 'my_map');
+        $liste = fn($wert) => array_values(array_filter(array_map(
+            [MMP_RestAPI::class, 'kuerzel'],
+            explode(',', (string) $wert)
+        )));
 
         // Assets nur auf Seiten laden, die den Shortcode haben.
         // Eigene Handles (mmp-…): Otter Blocks registriert bereits „leaflet“ (1.8.0, async);
@@ -37,6 +46,9 @@ class MMP_MapShortcode {
             'centerLng'       => floatval($atts['lng']),
             'defaultZoom'     => intval($atts['zoom']),
             'allowSuggestions'=> (bool) get_option('mmp_allow_suggestions', 1),
+            'einblenden'      => $liste($atts['einblenden']),
+            'ausblenden'      => $liste($atts['ausblenden']),
+            'nur'             => $liste($atts['nur']),
         ]);
 
         $height = intval($atts['height']);

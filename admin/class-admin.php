@@ -206,7 +206,23 @@ class MMP_Admin {
             echo '<div class="notice notice-success"><p>Kategorie gelöscht.</p></div>';
         }
 
+        // Start-Sichtbarkeit aller Kategorien (auch der aus DTRV-Termine): gespeichert werden die
+        // ausgeblendeten IDs, damit neue Kategorien standardmäßig sichtbar sind.
+        if (isset($_POST['mmp_action']) && $_POST['mmp_action'] === 'save_visibility') {
+            check_admin_referer('mmp_categories_nonce');
+            $sichtbar     = array_map('strval', array_map('sanitize_text_field', (array) wp_unslash($_POST['sichtbar'] ?? [])));
+            $ausgeblendet = [];
+            foreach (MMP_RestAPI::alle_kategorien() as $c) {
+                if (!in_array((string) $c['id'], $sichtbar, true)) {
+                    $ausgeblendet[] = (string) $c['id'];
+                }
+            }
+            update_option('mmp_hidden_categories', $ausgeblendet, false);
+            echo '<div class="notice notice-success"><p>Sichtbarkeit gespeichert.</p></div>';
+        }
+
         $categories = get_posts(['post_type' => 'mmp_category', 'posts_per_page' => -1, 'post_status' => 'publish']);
+        $alle       = MMP_RestAPI::alle_kategorien();
         ?>
         <div class="mmp-wrap">
             <div class="mmp-header">
@@ -281,6 +297,34 @@ class MMP_Admin {
                         <button type="submit" class="mmp-btn mmp-btn-primary">Kategorie anlegen</button>
                     </form>
                 </div>
+            </div>
+
+            <!-- Sichtbarkeit beim Laden -->
+            <div class="mmp-card">
+                <h2>Beim Laden der Karte</h2>
+                <p class="description">Nicht angehakte Kategorien sind zunächst ausgeblendet, damit die Karte übersichtlich bleibt. Besucher können sie in der Legende per Klick einblenden. Auf einzelnen Seiten lässt sich das über den Shortcode ändern, z. B. <code>[my_map einblenden="termine"]</code>, <code>[my_map ausblenden="alle" einblenden="wettkampf"]</code> oder <code>[my_map nur="wettkampf"]</code> (nur diese Kategorie). Statt des Kürzels geht auch die Gruppe (z. B. <code>termine</code>) oder <code>alle</code>.</p>
+                <?php if (empty($alle)): ?>
+                    <p class="mmp-empty-small">Noch keine Kategorien angelegt.</p>
+                <?php else: ?>
+                <form method="post" class="mmp-form">
+                    <?php wp_nonce_field('mmp_categories_nonce'); ?>
+                    <input type="hidden" name="mmp_action" value="save_visibility">
+                    <table class="mmp-table">
+                        <thead><tr><th>Eingeblendet</th><th>Kategorie</th><th>Gruppe</th><th>Kürzel für den Shortcode</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($alle as $c): ?>
+                        <tr>
+                            <td><input type="checkbox" name="sichtbar[]" value="<?= esc_attr((string) $c['id']) ?>" <?= checked(empty($c['hidden']), true, false) ?>></td>
+                            <td><span class="mmp-color-chip" style="background:<?= esc_attr((string) $c['color']) ?>"></span> <?= esc_html((string) $c['name']) ?></td>
+                            <td><?= esc_html((string) ($c['group'] ?? 'Kategorien')) ?></td>
+                            <td><code><?= esc_html($c['slug']) ?></code></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <button type="submit" class="mmp-btn mmp-btn-primary">Sichtbarkeit speichern</button>
+                </form>
+                <?php endif; ?>
             </div>
         </div>
     <?php }

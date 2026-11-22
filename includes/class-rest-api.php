@@ -60,6 +60,14 @@ class MMP_RestAPI {
     // ── GET /categories ───────────────────────────────────────────────
 
     public static function get_categories(): \WP_REST_Response {
+        return new \WP_REST_Response(self::alle_kategorien(), 200);
+    }
+
+    /**
+     * Alle Kategorien (eigene und aus anderen Plugins) mit Kürzel für den Shortcode und
+     * 'hidden' = beim Laden der Karte ausgeblendet (Einstellung „Kategorien“ im Backend).
+     */
+    public static function alle_kategorien(): array {
         $posts = get_posts([
             'post_type'      => 'mmp_category',
             'posts_per_page' => -1,
@@ -82,7 +90,23 @@ class MMP_RestAPI {
          */
         $categories = apply_filters('mmp_categories', $categories);
 
-        return new \WP_REST_Response(array_values($categories), 200);
+        $ausgeblendet = array_map('strval', (array) get_option('mmp_hidden_categories', []));
+        foreach ($categories as &$c) {
+            $c['slug']   = self::kuerzel((string) $c['name']);
+            $c['hidden'] = in_array((string) $c['id'], $ausgeblendet, true);
+            if (!empty($c['group'])) {
+                $c['group_slug'] = self::kuerzel((string) $c['group']);
+            }
+        }
+        unset($c);
+
+        return array_values($categories);
+    }
+
+    /** Kürzel aus einem Namen, z. B. „Sehenswürdigkeiten“ → „sehenswuerdigkeiten“. */
+    public static function kuerzel(string $name): string {
+        $name = strtr(mb_strtolower(trim($name), 'UTF-8'), ['ä' => 'ae', 'ö' => 'oe', 'ü' => 'ue', 'ß' => 'ss']);
+        return trim((string) preg_replace('/[^a-z0-9]+/', '-', $name), '-');
     }
 
     // ── GET /markers ──────────────────────────────────────────────────

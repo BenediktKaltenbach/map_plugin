@@ -147,15 +147,35 @@ function initMap() {
       api.get('/markers'),
     ]);
 
+    const alleKategorien = categories;
+
+    // Start-Sichtbarkeit: Backend-Einstellung (hidden), auf dieser Seite übersteuert durch die
+    // Shortcode-Attribute nur / einblenden / ausblenden (Kürzel, ID oder Gruppe; „alle“).
+    const nur  = cfg.nur || [];
+    const ein  = cfg.einblenden || [];
+    const aus  = cfg.ausblenden || [];
+    const passt = (c, liste) => liste.some((t) =>
+      t === 'alle' || t === String(c.id).toLowerCase() || t === c.slug || (c.group_slug && t === c.group_slug)
+    );
+    if (nur.length) {
+      categories = categories.filter((c) => passt(c, nur));
+    }
+
     // IDs als Strings: Kategorien anderer Plugins (Filter mmp_categories) haben Text-IDs.
-    categories.forEach((c) => activeCategories.add(String(c.id)));
+    // „ausblenden“ wirkt vor „einblenden“: ausblenden="alle" einblenden="wettkampf" zeigt nur Wettkampf.
+    categories.forEach((c) => {
+      let an = !c.hidden;
+      if (passt(c, aus)) an = false;
+      if (nur.length || passt(c, ein)) an = true;
+      if (an) activeCategories.add(String(c.id));
+    });
 
     renderMarkers(allMarkers);
     renderLegend(categories);
 
     if (cfg.allowSuggestions) {
       // Nur echte Kartenkategorien zur Auswahl, keine angezeigten Termine o. Ä.
-      initSuggestionForm(categories.filter((c) => !c.virtual));
+      initSuggestionForm(alleKategorien.filter((c) => !c.virtual));
     }
   }
 
@@ -308,16 +328,19 @@ function initMap() {
         L.DomEvent.disableScrollPropagation(div);
 
         // Kategorien anderer Plugins (z. B. Termine) mit eckigem Kästchen – passend zum Marker.
-        const eintrag = (c) =>
-          `<label class="mmp-legend-item mmp-legend-active${c.group ? ' mmp-legend-group-item' : ''}" data-cat-id="${escHtml(String(c.id))}">
-            <span class="mmp-legend-checkbox checked"
-                  style="border-color:${c.color}; background:${c.color};">
+        // Ausgeblendete Kategorien starten mit leerem Kästchen und lassen sich per Klick einblenden.
+        const eintrag = (c) => {
+          const an = activeCategories.has(String(c.id));
+          return `<label class="mmp-legend-item ${an ? 'mmp-legend-active' : 'mmp-legend-inactive'}${c.group ? ' mmp-legend-group-item' : ''}" data-cat-id="${escHtml(String(c.id))}">
+            <span class="mmp-legend-checkbox${an ? ' checked' : ''}"
+                  style="border-color:${c.color}; background:${an ? c.color : 'transparent'};">
               <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </span>
             <span>${escHtml(c.name)}</span>
           </label>`;
+        };
 
         // Kategorien anderer Plugins erscheinen unter ihrer eigenen Überschrift (Feld "group").
         const gruppen = {};

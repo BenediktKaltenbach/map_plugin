@@ -24,6 +24,16 @@ Optional parameters:
 [my_map height="600" zoom="12" lat="48.775" lng="9.182"]
 ```
 
+Which categories are visible when the map loads is set under **Kategorien › Beim Laden der Karte** (unticked = hidden at first; visitors can switch them on in the legend). A page can override this:
+
+```
+[my_map einblenden="termine"]                     show the "Termine" group here
+[my_map ausblenden="alle" einblenden="wettkampf"] start with only "Wettkampf" switched on
+[my_map nur="wettkampf"]                          show nothing but "Wettkampf"
+```
+
+Values are comma-separated and can be a category's short name (listed in the admin), its ID, a group name such as `termine`, or `alle`.
+
 On phones the map is limited to 65% of the screen height, so visitors can still scroll past it. Mouse-wheel/trackpad zoom only starts after clicking into the map.
 
 ## Admin
@@ -32,7 +42,7 @@ After activation the WordPress menu has:
 
 - **Marker** – manage markers on the map, add new ones (with images from the media library)
 - **Vorschläge** – review visitor suggestions, approve or reject them
-- **Kategorien** – categories with colours and icons
+- **Kategorien** – categories with colours and icons, plus which categories are visible when the map loads
 - **Einstellungen** – default zoom, map centre, map height, suggestions on/off
 
 ## Security and robustness
