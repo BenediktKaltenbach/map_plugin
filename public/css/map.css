@@ -451,6 +451,7 @@ a.mmp-suggest-btn {
 .mmp-mf-chip:has(input:checked) { background: #eff6ff; border-color: #2563eb; }
 .mmp-mf-check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.85rem; margin: 0 0 10px; }
 .mmp-mf-check input { margin-top: 3px; flex: none; }
+.mmp-mf-check > span { flex: 1; min-width: 0; }
 .mmp-mf-hinweis {
   font-size: 0.8rem;
   background: #fffbeb;

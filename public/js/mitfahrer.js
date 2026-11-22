@@ -262,7 +262,7 @@ function startMitfahrer(k) {
       </div>
       <div class="mmp-hp-field" aria-hidden="true"><label>Website</label><input type="text" id="mmp-mf-hp" tabindex="-1" autocomplete="off"></div>
       <p class="mmp-mf-hinweis">Anzeigename, Interessen und Text sehen alle, die sich ebenfalls eingetragen haben. Da sich jede Person eintragen kann, ist das praktisch öffentlich: Trag nichts ein, was nicht öffentlich sein soll.</p>
-      <label class="mmp-mf-check"><input type="checkbox" id="mmp-mf-ok"> Ich bin einverstanden, dass meine Angaben wie beschrieben gespeichert und angezeigt werden (${ds}). Ich kann meinen Eintrag jederzeit löschen.</label>
+      <label class="mmp-mf-check"><input type="checkbox" id="mmp-mf-ok"> <span>Ich bin einverstanden, dass meine Angaben wie beschrieben gespeichert und angezeigt werden (${ds}). Ich kann meinen Eintrag jederzeit löschen.</span></label>
       <div class="mmp-mf-fehler" role="alert"></div>
       <div class="mmp-form-actions">
         <button type="button" class="mmp-pub-btn mmp-pub-btn-secondary mmp-mf-zurueck">Zurück</button>
@@ -311,7 +311,7 @@ function startMitfahrer(k) {
       oeffnen(`<h3 id="mmp-mf-titel">Mein Eintrag</h3>
         <p class="mmp-mf-klein">Angemeldet mit ${escHtml(ich.email)}</p>
         ${felderHtml(ich)}
-        <label class="mmp-mf-check"><input type="checkbox" id="mmp-mf-pause"${ich.pausiert ? ' checked' : ''}> Pausieren (auf der Karte unsichtbar)</label>
+        <label class="mmp-mf-check"><input type="checkbox" id="mmp-mf-pause"${ich.pausiert ? ' checked' : ''}> <span>Pausieren (auf der Karte unsichtbar)</span></label>
         <div class="mmp-mf-fehler" role="alert"></div>
         <div class="mmp-form-actions">
           <button type="button" class="mmp-pub-btn mmp-pub-btn-primary mmp-mf-senden">Speichern</button>
